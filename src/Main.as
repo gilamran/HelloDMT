@@ -45,10 +45,10 @@ package
 		
 		protected function onAssetsReady(event:Event):void
 		{
-			sendVectorAssetsToDMT();
+			addVectorsToDMT();
 		}
 		
-		private function sendVectorAssetsToDMT():void 
+		private function addVectorsToDMT():void 
 		{
 			var square : DisplayObject = new (ApplicationDomain.currentDomain.getDefinition("Square"))
 			square.name = "square";
