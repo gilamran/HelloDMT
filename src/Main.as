@@ -2,11 +2,20 @@ package
 {
 	import com.xtdstudios.DMT.DMTBasic;
 	import com.xtdstudios.common.assetsLoader.AssetsLoaderFromByteArray;
+	import com.xtdstudios.common.assetsLoader.BaseAssetsLoader;
 	
+	import flash.display.Bitmap;
+	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
+	import flash.display.MovieClip;
 	import flash.events.Event;
+	import flash.geom.Matrix;
+	import flash.geom.Rectangle;
 	import flash.system.ApplicationDomain;
 	import flash.utils.ByteArray;
+	
+	import lup.utils.BoundsHelper;
 	
 	import starling.display.Sprite;
 	
@@ -14,6 +23,10 @@ package
 	{
 		[Embed(source="/../assets/HelloDMT-Assets.swf", mimeType="application/octet-stream")] 
 		private var AllAssetsClass:Class;
+
+		// Free vector graphics from: http://all-free-download.com/free-vector/
+		[Embed(source="/../assets/symbols.swf", mimeType="application/octet-stream")] 
+		private var SymbolsAssetsClass:Class;
 		
 		private var _dmtBasic			: DMTBasic;
 		private var _assetsLoader		: AssetsLoaderFromByteArray;
@@ -37,10 +50,11 @@ package
 		private function loadAssets():void
 		{
 			var assetsByteArrays : Vector.<ByteArray> = new Vector.<ByteArray>;
+			assetsByteArrays.push(new SymbolsAssetsClass());
 			assetsByteArrays.push(new AllAssetsClass());
 			_assetsLoader = new AssetsLoaderFromByteArray(assetsByteArrays);
 			_assetsLoader.addEventListener(Event.COMPLETE, onAssetsReady);
-			_assetsLoader.initializeAllAssets(); // Loads the fiven SWFs and add them to the current ApplicationDomain
+			_assetsLoader.initializeAllAssets(); // Loads the given SWFs and add them to the current ApplicationDomain
 		}
 		
 		protected function onAssetsReady(event:Event):void
@@ -48,42 +62,117 @@ package
 			addVectorsToDMT();
 		}
 		
+		/**
+		 * Converts a DisplayObject to a MovieClip containing a single Bitmap.
+		 */
+		public static function flatternDisplayObject(target:DisplayObject):Bitmap
+		{
+			if (!target.parent) {
+				var tempSprite:flash.display.Sprite = new flash.display.Sprite;
+				tempSprite.addChild(target);
+			}
+			
+			var container:DisplayObjectContainer = target.parent as DisplayObjectContainer;
+			var rectOrig:Rectangle = container.getBounds(target.parent);
+			var utils:BoundsHelper = new BoundsHelper();
+			var rect:Rectangle = utils.getRealBounds(container);
+			
+			var bmp:BitmapData = new BitmapData(rect.width + 1, rect.height, true, 0);
+			
+			// offset for drawing
+			var matrix:Matrix = new Matrix();
+			matrix.translate( -rect.x, -rect.y);
+			
+			// Note: we are drawing parent object, not target itself: 
+			// this allows to save all transformations and filters of target
+			bmp.draw(container, matrix);
+			
+			var bm:Bitmap = new Bitmap(bmp);
+			bm.name = target.name;
+			if(tempSprite)
+				tempSprite.removeChild(target);
+			return bm;
+		} 
+		
+		public static function flatternDisplayObjectToMovieClip(target:DisplayObject):MovieClip
+		{	
+			var bm:Bitmap = flatternDisplayObject(target);
+			var mc:MovieClip = new MovieClip();
+			mc.addChild(bm);
+			mc.name = target.name;
+			
+			return mc;
+		}
+		protected function addItemToRaster(definition:String, name:String=null, flattern:Boolean=false, scale:Number=1.0):DisplayObject
+		{
+			var disp:DisplayObject;
+			try {
+				disp = new (ApplicationDomain.currentDomain.getDefinition(definition));
+				if(!name)
+					name = definition;
+				disp.name = name;
+				disp.width *= scale;
+				disp.height *= scale;
+				if(flattern)
+					disp = flatternDisplayObject(disp) as DisplayObject;
+				_dmtBasic.addItemToRaster(disp);
+			} catch (e:Error) { trace(e.message); }
+			return disp;
+		}
+		
 		private function addVectorsToDMT():void 
 		{
-			var square : DisplayObject = new (ApplicationDomain.currentDomain.getDefinition("Square"))
-			square.name = "square";
+			addItemToRaster("Square", "square");
+			addItemToRaster("Circle", "circle");
+			addItemToRaster("Triangle", "triangle");
+			addItemToRaster("Triangle", "www", true, 1.2);
+			addItemToRaster("toys03_Ovni", "ovni");
+			addItemToRaster("cute_animals_Gamo", "gamo", true);
+			addItemToRaster("cute_animals_Abeja", "abeja", true, 4);
+			addItemToRaster("toys03_Bicicleta", "bicicleta");
 			
-			var circle : DisplayObject = new (ApplicationDomain.currentDomain.getDefinition("Circle"))
-			circle.name = "circle";
-			
-			var triangle : DisplayObject = new (ApplicationDomain.currentDomain.getDefinition("Triangle"))
-			triangle.name = "triangle";
-			
-			_dmtBasic.addItemToRaster(square);
-			_dmtBasic.addItemToRaster(circle);
-			_dmtBasic.addItemToRaster(triangle);
 			_dmtBasic.process(); // will rasterize the given assets
+		}
+		
+		protected function getAsset(name:String):starling.display.DisplayObject
+		{
+			var ret:starling.display.DisplayObject;
+			try {
+				ret = _dmtBasic.getAssetByUniqueAlias(name);
+			} catch (e:Error) { trace(e.message); }
+				
+			return ret;
+		}
+		
+		protected function addAsset(name:String, x:int=0, y:int=0):starling.display.DisplayObject
+		{
+			var o : starling.display.DisplayObject = getAsset(name); 
+			if(o) {
+				if(x)
+					o.x = x;
+				if(y)
+					o.y = y;
+				addChild(o);
+			}
+			return o;
 		}
 		
 		protected function dmtComplete(event:Event):void
 		{
-			var starlingSquare : Sprite = _dmtBasic.getAssetByUniqueAlias("square") as starling.display.Sprite;
-			starlingSquare.x = 100;
-			starlingSquare.y = 100;
-			addChild(starlingSquare);
-
-			var starlingCirlce : Sprite = _dmtBasic.getAssetByUniqueAlias("circle") as starling.display.Sprite;
-			starlingCirlce.x = 100;
-			starlingCirlce.y = 300;
-			addChild(starlingCirlce);
-
-			var starlingTriangle : Sprite = _dmtBasic.getAssetByUniqueAlias("triangle") as starling.display.Sprite;
+			var o : starling.display.DisplayObject;
+			addAsset("ovni", 100, 100); 
+			addAsset("gamo", 150, 100);
+			addAsset("square", 100, 150);
+			addAsset("circle", 150, 150);
+			var starlingTriangle : Sprite = getAsset("triangle") as starling.display.Sprite;
 			starlingTriangle.x = 100;
-			starlingTriangle.y = 500;
+			starlingTriangle.y = 300;
 			addChild(starlingTriangle);
-			
 			starlingTriangle.getChildByName("right_eye_instance").rotation = Math.PI/2;
 			starlingTriangle.getChildByName("left_eye_instance").rotation = -Math.PI/2;
+			
+			addAsset("www", 50, 200);
+
 		}
 	}
 }

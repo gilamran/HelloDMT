@@ -3,6 +3,7 @@
 	<name>HelloDMT</name>
 	<comment></comment>
 	<projects>
+		<project>DMT</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
