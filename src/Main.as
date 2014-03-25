@@ -2,7 +2,6 @@ package
 {
 	import com.xtdstudios.DMT.DMTBasic;
 	import com.xtdstudios.common.assetsLoader.AssetsLoaderFromByteArray;
-	import com.xtdstudios.common.assetsLoader.BaseAssetsLoader;
 	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -120,18 +119,20 @@ package
 			return disp;
 		}
 		
+		private var stage:int = 0;
 		private function addVectorsToDMT():void 
 		{
+			//_dmtBasic.
+			//_assetsLoader.
 			addItemToRaster("Square", "square");
 			addItemToRaster("Circle", "circle");
 			addItemToRaster("Triangle", "triangle");
-			addItemToRaster("Triangle", "www", true, 1.2);
+			addItemToRaster("Triangle", "www", false, 1.2);
 			addItemToRaster("toys03_Ovni", "ovni");
-			addItemToRaster("cute_animals_Gamo", "gamo", true);
-			addItemToRaster("cute_animals_Abeja", "abeja", true, 4);
 			addItemToRaster("toys03_Bicicleta", "bicicleta");
-			
-			_dmtBasic.process(); // will rasterize the given assets
+			addItemToRaster("cute_animals_Abeja", "abeja", false, 3); // abeja  Dictionary
+			addItemToRaster("cute_animals_Gamo", "gamo", false);
+			_dmtBasic.process(true, 1); // will rasterize the given assets
 		}
 		
 		protected function getAsset(name:String):starling.display.DisplayObject
@@ -159,19 +160,33 @@ package
 		
 		protected function dmtComplete(event:Event):void
 		{
+//			if(stage == 0) {
+//				stage = 1;
+//				addItemToRaster("cute_animals_Abeja", "abeja", false, 3); // abeja  Dictionary
+//				addItemToRaster("cute_animals_Gamo", "gamo", false);
+//				_dmtBasic.process(true, 0); // will rasterize the given assets
+//			} else {
+//				draw();
+//			}
+			draw();
+		}
+		
+		protected function draw():void
+		{
 			var o : starling.display.DisplayObject;
 			addAsset("ovni", 100, 100); 
-			addAsset("gamo", 150, 100);
-			addAsset("square", 100, 150);
-			addAsset("circle", 150, 150);
-			var starlingTriangle : Sprite = getAsset("triangle") as starling.display.Sprite;
-			starlingTriangle.x = 100;
-			starlingTriangle.y = 300;
-			addChild(starlingTriangle);
-			starlingTriangle.getChildByName("right_eye_instance").rotation = Math.PI/2;
-			starlingTriangle.getChildByName("left_eye_instance").rotation = -Math.PI/2;
+			addAsset("gamo", 150, 150);
+			//addAsset("square", 100, 150);
+			//addAsset("circle", 150, 150);
+//			var starlingTriangle : Sprite = getAsset("triangle") as starling.display.Sprite;
+//			starlingTriangle.x = 100;
+//			starlingTriangle.y = 300;
+//			addChild(starlingTriangle);
+//			starlingTriangle.getChildByName("right_eye_instance").rotation = Math.PI/2;
+//			starlingTriangle.getChildByName("left_eye_instance").rotation = -Math.PI/2;
 			
 			addAsset("www", 50, 200);
+			addAsset("abeja", 50, 250);
 
 		}
 	}
