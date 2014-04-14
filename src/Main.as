@@ -102,6 +102,7 @@ package
 			
 			return mc;
 		}
+		
 		protected function addItemToRaster(definition:String, name:String=null, flattern:Boolean=false, scale:Number=1.0):DisplayObject
 		{
 			var disp:DisplayObject;
@@ -132,7 +133,7 @@ package
 			addItemToRaster("toys03_Bicicleta", "bicicleta");
 			addItemToRaster("cute_animals_Abeja", "abeja", false, 3); // abeja  Dictionary
 			addItemToRaster("cute_animals_Gamo", "gamo", false);
-			_dmtBasic.process(true, 1); // will rasterize the given assets
+			_dmtBasic.process(true, 0); // will rasterize the given assets
 		}
 		
 		protected function getAsset(name:String):starling.display.DisplayObject
