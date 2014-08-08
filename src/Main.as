@@ -40,7 +40,7 @@ package
 			assetsByteArrays.push(new AllAssetsClass());
 			_assetsLoader = new AssetsLoaderFromByteArray(assetsByteArrays);
 			_assetsLoader.addEventListener(Event.COMPLETE, onAssetsReady);
-			_assetsLoader.initializeAllAssets(); // Loads the fiven SWFs and add them to the current ApplicationDomain
+			_assetsLoader.initializeAllAssets(); // Loads the SWF
 		}
 		
 		protected function onAssetsReady(event:Event):void
@@ -50,13 +50,13 @@ package
 		
 		private function addVectorsToDMT():void 
 		{
-			var square : DisplayObject = new (ApplicationDomain.currentDomain.getDefinition("Square"))
+			var square : DisplayObject = new (_assetsLoader.getAssetClass("Square") as Class) as DisplayObject;
 			square.name = "square";
 			
-			var circle : DisplayObject = new (ApplicationDomain.currentDomain.getDefinition("Circle"))
+			var circle : DisplayObject = new (_assetsLoader.getAssetClass("Circle") as Class) as DisplayObject;
 			circle.name = "circle";
 			
-			var triangle : DisplayObject = new (ApplicationDomain.currentDomain.getDefinition("Triangle"))
+			var triangle : DisplayObject = new (_assetsLoader.getAssetClass("Triangle") as Class) as DisplayObject;
 			triangle.name = "triangle";
 			
 			_dmtBasic.addItemToRaster(square);
