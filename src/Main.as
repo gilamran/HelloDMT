@@ -38,7 +38,7 @@ package
 		{
 			var assetsByteArrays : Vector.<ByteArray> = new Vector.<ByteArray>;
 			assetsByteArrays.push(new AllAssetsClass());
-			_assetsLoader = new AssetsLoaderFromByteArray(assetsByteArrays);
+			_assetsLoader = new AssetsLoaderFromByteArray(assetsByteArrays, ApplicationDomain.currentDomain);
 			_assetsLoader.addEventListener(Event.COMPLETE, onAssetsReady);
 			_assetsLoader.initializeAllAssets(); // Loads the SWF
 		}
